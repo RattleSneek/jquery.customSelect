@@ -24,22 +24,29 @@
             },
             options = $.extend(defaults, options),
             prefix = options.customClass,
-            changed = function ($select,customSelectSpan) {
+            changed = function ($select, customSelectSpan, caption) {
                 var currentSelected = $select.find(':selected'),
                 customSelectSpanInner = customSelectSpan.children(':first'),
-                html = currentSelected.html() || '&nbsp;';
+                html = currentSelected.html();
+                
+                if (!html) {
+                   html = caption;
+                   customSelectSpan.addClass('caption');
+                } else {
+                   customSelectSpan.removeClass('caption');
+                }
 
                 customSelectSpanInner.html(html);
                 
                 if (currentSelected.attr('disabled')) {
-                	customSelectSpan.addClass(getClass('DisabledOption'));
+                   customSelectSpan.addClass(getClass('DisabledOption'));
                 } else {
-                	customSelectSpan.removeClass(getClass('DisabledOption'));
+                   customSelectSpan.removeClass(getClass('DisabledOption'));
                 }
                 
                 setTimeout(function () {
-                    customSelectSpan.removeClass(getClass('Open'));
-                    $(document).off('mouseup.'+getClass('Open'));                  
+                   customSelectSpan.removeClass(getClass('Open'));
+                   $(document).off('mouseup.'+getClass('Open'));                  
                 }, 60);
             },
             getClass = function(suffix){
@@ -49,7 +56,8 @@
             return this.each(function () {
                 var $select = $(this),
                     customSelectInnerSpan = $('<span />').addClass(getClass('Inner')),
-                    customSelectSpan = $('<span />');
+                    customSelectSpan = $('<span />'),
+                    caption = options.getCaption ? options.getCaption($select) : '&nbsp;';
 
                 $select.after(customSelectSpan.append(customSelectInnerSpan));
                 
@@ -65,7 +73,7 @@
                 $select
                     .addClass('hasCustomSelect')
                     .on('update', function () {
-						changed($select,customSelectSpan);
+						changed($select,customSelectSpan, caption);
 						
                         var selectBoxWidth = parseInt($select.outerWidth(), 10) -
                                 (parseInt(customSelectSpan.outerWidth(), 10) -
@@ -100,7 +108,7 @@
                     })
                     .on('change', function () {
                         customSelectSpan.addClass(getClass('Changed'));
-                        changed($select,customSelectSpan);
+                        changed($select,customSelectSpan,caption);
                     })
                     .on('keyup', function (e) {
                         if(!customSelectSpan.hasClass(getClass('Open'))){
@@ -108,7 +116,7 @@
                             $select.focus();
                         }else{
                             if(e.which==13||e.which==27){
-                                changed($select,customSelectSpan);
+                                changed($select,customSelectSpan,caption);
                             }
                         }
                     })
@@ -128,7 +136,7 @@
                                     if( e.target != $select.get(0) && $.inArray(e.target,$select.find('*').get()) < 0 ){
                                         $select.blur();
                                     }else{
-                                        changed($select,customSelectSpan);
+                                        changed($select,customSelectSpan,caption);
                                     }
                                 });
                             }
